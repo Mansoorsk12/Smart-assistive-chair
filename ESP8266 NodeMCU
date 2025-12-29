@@ -1,0 +1,116 @@
+//ESP8266 NodeMCU Code: WiFi Controlled Robot
+
+#include <ESP8266WiFi.h>
+ 
+WiFiClient client;
+WiFiServer server(80);
+ 
+/* WIFI settings */
+const char* ssid = "TP-Link_8E98";
+const char* password = "86427920";
+ 
+String  data = "";
+
+void forward(void);
+void backward(void);
+void left(void);
+void right(void);
+void stoprobot(void);
+
+void setup()
+
+{
+  Serial.begin(9600);
+ 
+  //connect to your local wi-fi network
+  WiFi.begin(ssid, password);
+ 
+  // Attempt to connect to WiFi network:
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    //Serial.print(".");
+    // Connect to WPA/WPA2 network. Change this line if using open or WEP  network:
+    // Wait 3 seconds for connection:
+    delay(3000);
+  }
+ 
+  //
+  //Serial.println("");
+  //Serial.println("WiFi connected");
+  //Serial.println("IP address: ");
+  //Serial.println(WiFi.localIP());   //You can get IP address assigned to ESP
+  //
+  /* start server communication */
+  server.begin();
+}
+ 
+void loop()
+{
+  /* If the server available, run the "checkClient" function */
+  client = server.available();
+  if (!client) return;
+  data = checkClient ();
+ 
+  if (data.length() > 0)
+  {
+    //Serial.println(data);
+  }
+ 
+  /************************ Run function according to incoming data from application *************************/
+ 
+  if (data == "f") forward();
+  else if (data == "b") backward();
+  else if (data == "l") left();
+  else if (data == "r") right();
+  else if (data == "s") stoprobot();
+ 
+  sendBackEcho(data); // send command echo back to android device
+  data = "";
+}
+
+void forward(void)
+{
+  Serial.print("f");
+}
+
+void backward(void)
+{
+  Serial.print("b");
+}
+
+void left(void)
+{
+  Serial.print("l");
+}
+
+void right(void)
+{
+  Serial.print("r");
+}
+
+void stoprobot(void)
+{
+  Serial.print("s");
+}
+
+String checkClient (void)
+{
+  while (!client.available()) delay(1);
+  String request = client.readStringUntil('\r');
+  request.remove(0, 5);
+  request.remove(request.length() - 9, 9);
+  return request;
+}
+
+void sendBackEcho(String echo)
+{
+  client.println("HTTP/1.1 200 OK ");
+  client.println("Content-Type: text/html");
+  client.println("");
+  client.println("<!DOCTYPE HTML>");
+  client.println("<html>");
+  client.println(echo);
+  client.println("</html>");
+  client.stop();
+  delay(1);
+}

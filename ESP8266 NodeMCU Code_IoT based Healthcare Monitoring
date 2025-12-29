@@ -1,0 +1,149 @@
+//ESP8266 NodeMCU Code: IoT based Healthcare Monitoring
+
+#include <Arduino.h>
+#if defined(ESP32)
+#include <WiFi.h>
+#elif defined(ESP8266)
+#include <ESP8266WiFi.h>
+#endif
+
+#include <WiFiClient.h>  //Client wifi connection library
+
+#include <ThingSpeak.h>  //ThingSpeak Cloud library
+
+#define WIFI_SSID "TP-Link_8E98"
+#define WIFI_PASSWORD "86427920"
+
+WiFiClient client;  //client configuration
+
+unsigned long myChannelNumber1 = 3205504;  //Thingspeak channel number
+const char * myWriteAPIKey1 = "4DVXLVYFQB0S95XH";  //Thingspeak Write API key
+
+unsigned long myChannelNumber2 = 3205505;  //Thingspeak channel number
+const char * myWriteAPIKey2 = "ZG7ETKL71NCG7QO1";  //Thingspeak Write API key
+
+String readstring = "";
+
+String hum;
+String temp;
+String bodytemp;
+String BPM;
+String ECGval;
+String pushbutton;
+String ADXL335_x;
+String ADXL335_y;
+String ADXL335_z;
+String AccAlert;
+
+int ind1; // , locations
+int ind2;
+int ind3;
+int ind4;
+int ind5;
+int ind6;
+int ind7;
+int ind8;
+int ind9;
+int ind10;
+
+void setup()
+{
+  Serial.begin(115200);
+  Serial.println();
+
+  Serial.print("Connecting to AP");
+
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    Serial.print(".");
+    delay(200);
+  }
+
+  Serial.println("");
+  Serial.println("WiFi connected.");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
+  Serial.println();
+
+  ThingSpeak.begin(client);
+}
+
+void loop()
+{
+  readstring = "";  //Reset the variable
+ 
+  while (Serial.available())
+  {  //Check if there is an available byte to read
+  delay(10); //Delay added to make thing stable
+  char c = Serial.read(); //Conduct a serial read
+  if (c == '#') {break;} //Exit the loop when the # is detected after the word
+  readstring += c; //build the string
+  }
+
+  if (readstring.length() > 0)
+  {
+    Serial.println(readstring);
+
+    ind1  = readstring.indexOf(',');
+    hum  = readstring.substring(0, ind1);
+    ind2  = readstring.indexOf(',', ind1+1);
+    temp  = readstring.substring(ind1+1, ind2);
+    ind3  = readstring.indexOf(',', ind2+1);//finds location of second ,
+    bodytemp = readstring.substring(ind2+1, ind3);
+    ind4  = readstring.indexOf(',', ind3+1);//finds location of second ,
+    BPM  = readstring.substring(ind3+1, ind4);
+    ind5  = readstring.indexOf(',', ind4+1);//finds location of second ,
+    ECGval  = readstring.substring(ind4+1, ind5);
+    ind6  = readstring.indexOf(',', ind5+1);//finds location of second ,
+    pushbutton  = readstring.substring(ind5+1, ind6);
+    ind7  = readstring.indexOf(',', ind6+1);//finds location of second ,
+    ADXL335_x  = readstring.substring(ind6+1, ind7);
+    ind8  = readstring.indexOf(',', ind7+1);//finds location of second ,
+    ADXL335_y  = readstring.substring(ind7+1, ind8);
+    ind9  = readstring.indexOf(',', ind8+1);//finds location of second ,
+    ADXL335_z  = readstring.substring(ind8+1, ind9);
+    ind10  = readstring.indexOf(',', ind9+1);//finds location of second ,
+    AccAlert  = readstring.substring(ind9+1);//captures remain part of data after last ,
+
+    Serial.print("Humidity: ");
+    Serial.println(hum);
+    Serial.print("Temperature: ");
+    Serial.println(temp);
+    Serial.print("Body Temperature: ");
+    Serial.println(bodytemp);
+    Serial.print("Pulse: ");
+    Serial.println(BPM);
+    Serial.print("ECG: ");
+    Serial.println(ECGval);  
+    Serial.print("Push Button State: ");
+    Serial.println(pushbutton);
+    Serial.print("ADXL335 X: ");
+    Serial.println(ADXL335_x);  
+    Serial.print("ADXL335 Y: ");
+    Serial.println(ADXL335_y);  
+    Serial.print("ADXL335 Z: ");
+    Serial.println(ADXL335_z);  
+    Serial.print("Acceleration Alert State: ");
+    Serial.println(AccAlert);
+     
+    ThingSpeak.setField(1, hum);
+    ThingSpeak.setField(2, temp);
+    ThingSpeak.setField(3, bodytemp);
+    ThingSpeak.setField(4, BPM);
+    ThingSpeak.setField(5, ECGval);
+    ThingSpeak.setField(6, pushbutton);
+
+    ThingSpeak.writeFields(myChannelNumber1, myWriteAPIKey1);
+    delay(1000);
+   
+    ThingSpeak.setField(1, ADXL335_x);
+    ThingSpeak.setField(2, ADXL335_y);
+    ThingSpeak.setField(3, ADXL335_z);
+    ThingSpeak.setField(4, AccAlert);
+   
+    ThingSpeak.writeFields(myChannelNumber2, myWriteAPIKey2);  
+ 
+    delay(2000);
+  }
+}
