@@ -347,3 +347,4 @@ IoT | Assistive Technology | Healthcare | Embedded Systems | Web Development
 ## 🔗 Repository
 
 [Smart Assistive Chair – GitHub](https://github.com/Mansoorsk12/Smart-assistive-chair)
+https://thingspeak.mathworks.com/channels
