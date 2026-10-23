@@ -338,7 +338,7 @@ The project helped us gain practical experience in hardware-software integration
 
 **Academic Major Project**
 
-### Domain
+### Domains
 
 IoT | Assistive Technology | Healthcare | Embedded Systems | Web Development
 
